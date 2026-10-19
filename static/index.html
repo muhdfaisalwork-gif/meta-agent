@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Nexus Agent - Zero-API FB & IG Autonomous Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { 900: '#090d16', 800: '#111827', 700: '#1e293b', 600: '#334155' }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #111827; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-dark-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col custom-scrollbar">
+
+    <!-- Top Header -->
+    <header class="border-b border-dark-700 bg-dark-800/90 backdrop-blur sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-600 via-purple-600 to-blue-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <i data-lucide="clapperboard" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-tight flex items-center gap-2">
+                    Meta Nexus Agent
+                    <span class="text-xs bg-pink-500/20 text-pink-300 px-2.5 py-0.5 rounded-full font-mono border border-pink-500/30">ZERO-API FB & IG STUDIO</span>
+                </h1>
+                <p class="text-xs text-slate-400">Playwright Persistent Context + yt-dlp + FFmpeg + Local Ollama + 82-Rule Humanizer</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <div class="hidden md:flex items-center space-x-2 text-xs bg-dark-700/90 px-3 py-1.5 rounded-lg border border-dark-600">
+                <span id="ig-auth-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span>IG: <strong id="ig-auth-label" class="font-mono">Ready</strong></span>
+                <span class="text-slate-600">|</span>
+                <span id="fb-auth-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span>FB: <strong id="fb-auth-label" class="font-mono">Ready</strong></span>
+            </div>
+            <div class="hidden lg:flex items-center space-x-2 text-xs bg-dark-700/90 px-3 py-1.5 rounded-lg border border-dark-600">
+                <i data-lucide="cpu" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>LLM: <strong id="active-llm-badge" class="text-emerald-300 font-mono">ollama/qwen2.5</strong></span>
+            </div>
+            <button onclick="runFullAutoCycle()" class="text-xs bg-gradient-to-r from-pink-600 to-blue-600 hover:from-pink-500 hover:to-blue-500 text-white font-semibold px-4 py-2 rounded-xl shadow flex items-center gap-1.5 transition">
+                <i data-lucide="zap" class="w-3.5 h-3.5"></i> Run Full Autonomous Cycle
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="flex-1 flex overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 border-r border-dark-700 bg-dark-800/50 p-4 flex flex-col justify-between shrink-0">
+            <nav class="space-y-1.5">
+                <button onclick="switchTab('sheet')" id="tab-btn-sheet" class="sidebar-btn flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-100 bg-dark-700 border border-dark-600">
+                    <i data-lucide="table" class="w-4 h-4 text-emerald-400"></i> Master Sheet (.xlsx)
+                </button>
+                <button onclick="switchTab('extractor')" id="tab-btn-extractor" class="sidebar-btn flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-400 hover:text-slate-200 hover:bg-dark-700/50">
+                    <i data-lucide="download-cloud" class="w-4 h-4 text-pink-400"></i> 02 Saved & yt-dlp
+                </button>
+                <button onclick="switchTab('mixer')" id="tab-btn-mixer" class="sidebar-btn flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-400 hover:text-slate-200 hover:bg-dark-700/50">
+                    <i data-lucide="music" class="w-4 h-4 text-purple-400"></i> 03 FFmpeg Music Studio
+                </button>
+                <button onclick="switchTab('publisher')" id="tab-btn-publisher" class="sidebar-btn flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-400 hover:text-slate-200 hover:bg-dark-700/50">
+                    <i data-lucide="send" class="w-4 h-4 text-blue-400"></i> 04/05 IG & FB Publisher
+                </button>
+                <button onclick="switchTab('comments')" id="tab-btn-comments" class="sidebar-btn flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-400 hover:text-slate-200 hover:bg-dark-700/50">
+                    <i data-lucide="message-circle" class="w-4 h-4 text-cyan-400"></i> Phase 5 AI Commenter
+                </button>
+                <button onclick="switchTab('brain')" id="tab-btn-brain" class="sidebar-btn flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-400 hover:text-slate-200 hover:bg-dark-700/50">
+                    <i data-lucide="brain" class="w-4 h-4 text-amber-400"></i> Cognitive Brain & Rules
+                </button>
+                <button onclick="switchTab('login')" id="tab-btn-login" class="sidebar-btn flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-400 hover:text-slate-200 hover:bg-dark-700/50">
+                    <i data-lucide="key-round" class="w-4 h-4 text-rose-400"></i> 01 Login & Guardrails
+                </button>
+                <button onclick="switchTab('seo')" id="tab-btn-seo" class="sidebar-btn flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-400 hover:text-slate-200 hover:bg-dark-700/50">
+                    <i data-lucide="github" class="w-4 h-4 text-orange-400"></i> GitHub SEO Agent
+                </button>
+            </nav>
+
+            <!-- Phase 6 Anti-Ban Guardrail Card -->
+            <div class="bg-dark-800/90 p-3.5 rounded-2xl border border-dark-600 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Anti-Ban Guardrails</span>
+                    <span class="text-xs text-emerald-400 font-mono">ACTIVE</span>
+                </div>
+                <div class="text-xs text-slate-300 space-y-1">
+                    <div class="flex justify-between"><span>Reels Today:</span> <strong id="stat-reels-cap" class="text-blue-300">0 / 5</strong></div>
+                    <div class="flex justify-between"><span>Comments Session:</span> <strong id="stat-comments-cap" class="text-cyan-300">0 / 20</strong></div>
+                    <div class="flex justify-between"><span>Human Jitter:</span> <span class="font-mono text-slate-400">3.5s - 9.2s</span></div>
+                    <div class="flex justify-between"><span>Typing Delay:</span> <span class="font-mono text-slate-400">50 - 90ms</span></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+
+            <!-- Toast / Status Banner -->
+            <div id="status-banner" class="hidden bg-dark-800 border border-blue-500/40 text-slate-200 px-4 py-3 rounded-xl text-sm flex items-center justify-between">
+                <span id="status-banner-text">Ready.</span>
+                <button onclick="document.getElementById('status-banner').classList.add('hidden')" class="text-xs text-slate-400 hover:text-white">Dismiss</button>
+            </div>
+
+            <!-- TAB 1: MASTER SHEET (saved_videos_log.xlsx) -->
+            <div id="tab-sheet" class="tab-pane space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight">Automated Master Sheet (`saved_videos_log.xlsx`)</h2>
+                        <p class="text-sm text-slate-400">Bidirectionally synced with SQLite & Excel (`ID | Platform | Video Name / Hook | Full Caption | Creator | URL | Local MP4 | Music | Status | Posted URL`)</p>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <a href="/api/sheet/download" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 transition">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Download saved_videos_log.xlsx
+                        </a>
+                        <button onclick="loadSheetRows()" class="text-xs bg-dark-700 hover:bg-dark-600 border border-dark-600 px-3.5 py-2.5 rounded-xl flex items-center gap-1.5">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Metric Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div class="bg-dark-800 border border-dark-700 p-4 rounded-2xl">
+                        <span class="text-xs text-slate-400 uppercase">Total Saved Videos</span>
+                        <h3 id="card-total-videos" class="text-2xl font-bold mt-1">0</h3>
+                    </div>
+                    <div class="bg-dark-800 border border-dark-700 p-4 rounded-2xl">
+                        <span class="text-xs text-slate-400 uppercase">Downloaded (Raw .mp4)</span>
+                        <h3 id="card-downloaded-videos" class="text-2xl font-bold text-amber-400 mt-1">0</h3>
+                    </div>
+                    <div class="bg-dark-800 border border-dark-700 p-4 rounded-2xl">
+                        <span class="text-xs text-slate-400 uppercase">Ready to Post (FFmpeg Mixed)</span>
+                        <h3 id="card-ready-videos" class="text-2xl font-bold text-blue-400 mt-1">0</h3>
+                    </div>
+                    <div class="bg-dark-800 border border-dark-700 p-4 rounded-2xl">
+                        <span class="text-xs text-slate-400 uppercase">Published (IG & FB)</span>
+                        <h3 id="card-published-videos" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
+                    </div>
+                </div>
+
+                <!-- Master Table -->
+                <div class="bg-dark-800 border border-dark-700 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-dark-700/80 text-slate-300 uppercase border-b border-dark-600">
+                                    <th class="py-3 px-4">ID</th>
+                                    <th class="py-3 px-4">Platform</th>
+                                    <th class="py-3 px-4">Video Name / Hook</th>
+                                    <th class="py-3 px-4">Creator</th>
+                                    <th class="py-3 px-4">Music Used</th>
+                                    <th class="py-3 px-4">Local MP4 Path</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Quick Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sheet-table-body" class="divide-y divide-dark-700">
+                                <tr><td colspan="8" class="py-8 text-center text-slate-500">Loading master sheet...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: 02 SAVED EXTRACTOR & YT-DLP -->
+            <div id="tab-extractor" class="tab-pane hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold">Phase 2: Saved Video Scraper & `yt-dlp` Downloader (`02_saved_extractor.py`)</h2>
+                    <p class="text-sm text-slate-400">Scrapes `instagram.com/<user>/saved/all-posts/` & `facebook.com/saved` or downloads any Reel URL directly with `yt-dlp` using `chrome_profile` cookies.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Direct URL yt-dlp Card -->
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-base flex items-center gap-2">
+                            <i data-lucide="link" class="w-4 h-4 text-pink-400"></i> Extract Single Reel / Video URL via `yt-dlp`
+                        </h3>
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1">Instagram or Facebook Reel/Video URL</label>
+                            <input id="extract-url-input" type="text" placeholder="https://www.instagram.com/reel/... or https://www.facebook.com/reel/..." class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3.5 py-2.5 text-sm text-white">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1">Target Platform</label>
+                            <select id="extract-platform-select" class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3.5 py-2.5 text-sm text-white">
+                                <option value="Instagram">Instagram</option>
+                                <option value="Facebook">Facebook</option>
+                            </select>
+                        </div>
+                        <button onclick="extractSingleUrl()" class="w-full bg-pink-600 hover:bg-pink-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">
+                            Download `.mp4` + Rewrite Caption + Add to `.xlsx`
+                        </button>
+                    </div>
+
+                    <!-- Auto-Scrape Saved Collections Card -->
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-base flex items-center gap-2">
+                            <i data-lucide="bookmark" class="w-4 h-4 text-blue-400"></i> Auto-Scrape Saved Collections (IG + FB)
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Opens your persistent Chrome profile, scrolls through Instagram Saved (`/saved/all-posts/`) and Facebook Saved (`/saved`) with 3.5s–9.2s human jitter, downloads every Reel via `yt-dlp`, and updates `saved_videos_log.xlsx`.
+                        </p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="scrapeSavedCollection('Instagram')" class="bg-dark-700 hover:bg-dark-600 border border-dark-600 text-slate-200 font-medium py-2.5 rounded-xl text-xs">
+                                Scrape Instagram Saved
+                            </button>
+                            <button onclick="scrapeSavedCollection('Facebook')" class="bg-dark-700 hover:bg-dark-600 border border-dark-600 text-slate-200 font-medium py-2.5 rounded-xl text-xs">
+                                Scrape Facebook Saved
+                            </button>
+                        </div>
+                        <button onclick="scrapeSavedCollection('both')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">
+                            Run Full Saved Scraper (IG + FB)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: 03 FFMPEG MEDIA & MUSIC MIXER -->
+            <div id="tab-mixer" class="tab-pane hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold">Phase 3: Music & Reel Studio (`03_media_music_mixer.py`)</h2>
+                    <p class="text-sm text-slate-400">Scenario A: Video + Local MP3 (20% orig / 85% music) | Scenario B: Static Image + MP3 -> 15s 1080x1920 Reel | Scenario C: Native UI Audio Flag</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Scenario A -->
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <span class="text-xs bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-full font-mono">SCENARIO A</span>
+                        <h3 class="font-semibold text-base">Reel + Local MP3 Pre-Mix</h3>
+                        <p class="text-xs text-slate-400">Lowers original video audio to 20% and overlays selected `.mp3` from `music_library/` at 85% volume via FFmpeg.</p>
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1">Sheet Video Row ID</label>
+                            <input id="mix-a-video-id" type="number" value="1" class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1">Select MP3 Track (`music_library/`)</label>
+                            <select id="mix-a-mp3" class="music-select w-full bg-dark-900 border border-dark-600 rounded-xl px-3 py-2 text-sm"></select>
+                        </div>
+                        <button onclick="runScenarioA()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+                            Mix Video (20%) + MP3 (85%)
+                        </button>
+                    </div>
+
+                    <!-- Scenario B -->
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <span class="text-xs bg-pink-500/20 text-pink-300 px-2.5 py-1 rounded-full font-mono">SCENARIO B</span>
+                        <h3 class="font-semibold text-base">Static Image + Music -> 15s Reel</h3>
+                        <p class="text-xs text-slate-400">Loops a 1080x1920 visual card or static `.jpg/.png` into a 15-second 9:16 `.mp4` Reel merged with `.mp3` audio.</p>
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1">9:16 Visual Card Hook Text</label>
+                            <input id="mix-b-hook" type="text" value="We cut order execution latency from 1.2s to 420ms in Sultrix Trade OS." class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1">Select MP3 Track (`music_library/`)</label>
+                            <select id="mix-b-mp3" class="music-select w-full bg-dark-900 border border-dark-600 rounded-xl px-3 py-2 text-sm"></select>
+                        </div>
+                        <button onclick="runScenarioB()" class="w-full bg-pink-600 hover:bg-pink-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+                            Render 15s 1080x1920 Reel (.mp4)
+                        </button>
+                    </div>
+
+                    <!-- Scenario C -->
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <span class="text-xs bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-full font-mono">SCENARIO C</span>
+                        <h3 class="font-semibold text-base">Native UI Audio Flag</h3>
+                        <p class="text-xs text-slate-400">Flags the row in `saved_videos_log.xlsx` so the Playwright publisher searches & attaches trending music inside IG/FB's native "Add Music" modal.</p>
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1">Sheet Video Row ID</label>
+                            <input id="mix-c-video-id" type="number" value="1" class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1">Native IG/FB Song Search Query</label>
+                            <input id="mix-c-song" type="text" value="Hans Zimmer Time" class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3 py-2 text-sm">
+                        </div>
+                        <button onclick="runScenarioC()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+                            Flag Row with Native UI Audio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: 04 & 05 IG & FB PUBLISHER -->
+            <div id="tab-publisher" class="tab-pane hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold">Phase 4: Instagram & Facebook UI Publisher (`04_ig` & `05_fb`)</h2>
+                    <p class="text-sm text-slate-400">Uploads processed 9:16 Reels from `ready_to_post/`, attaches native music if flagged, types 82-Rule humanized captions, and marks `saved_videos_log.xlsx` as `"Published"`.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Caption Studio -->
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-base">82-Rule AI Caption Rewriter</h3>
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1">Video Hook / Topic</label>
+                            <input id="pub-topic" type="text" value="Why we replaced paid social schedulers with a local Playwright + FFmpeg agent" class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3.5 py-2 text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-slate-400 block mb-1">Platform</label>
+                                <select id="pub-platform" class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3 py-2 text-sm">
+                                    <option value="Instagram">Instagram</option>
+                                    <option value="Facebook">Facebook</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400 block mb-1">Sheet Video Row ID</label>
+                                <input id="pub-video-id" type="number" value="1" class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3 py-2 text-sm">
+                            </div>
+                        </div>
+                        <button onclick="draftMetaCaption()" class="w-full bg-dark-700 hover:bg-dark-600 border border-dark-600 text-slate-200 font-semibold py-2 rounded-xl text-xs">
+                            Generate 82-Rule Humanized Caption
+                        </button>
+                        <textarea id="pub-caption-box" rows="6" class="w-full bg-dark-900 border border-dark-600 rounded-xl p-3.5 text-xs text-slate-200 font-mono" placeholder="Generated caption will appear here..."></textarea>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="publishReel('Instagram')" class="bg-pink-600 hover:bg-pink-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+                                Publish to Instagram Reel
+                            </button>
+                            <button onclick="publishReel('Facebook')" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+                                Publish to Facebook Reel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Execution Trace -->
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-base">Live Browser Publisher Execution Log</h3>
+                        <pre id="pub-execution-log" class="bg-dark-900 border border-dark-700 rounded-xl p-4 text-xs text-emerald-300 font-mono overflow-x-auto h-80 custom-scrollbar">Select a video row ID and click Publish to run 04_ig_publisher_commenter.py or 05_fb_publisher_commenter.py...</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: PHASE 5 AI COMMENTER & AUTO-REPLIER -->
+            <div id="tab-comments" class="tab-pane hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold">Phase 5: Autonomous Commenter & Auto-Replier</h2>
+                    <p class="text-sm text-slate-400">Mode 1: Inbox/Notification Auto-Reply | Mode 2: Niche Hashtag Outreach (watches Reel 5–8s, types at 50–90ms/char)</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-base">Mode 1: Post / Inbox Comment Auto-Replier</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <select id="com-platform" class="bg-dark-900 border border-dark-600 rounded-xl px-3 py-2 text-sm">
+                                <option value="Instagram">Instagram</option>
+                                <option value="Facebook">Facebook</option>
+                            </select>
+                            <input id="com-author" type="text" value="@senior_sre" placeholder="Commenter Handle" class="bg-dark-900 border border-dark-600 rounded-xl px-3 py-2 text-sm">
+                        </div>
+                        <input id="com-incoming" type="text" value="How did you get FFmpeg and yt-dlp working seamlessly with Chrome cookies?" class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3.5 py-2 text-sm">
+                        <button onclick="runCommentEngine('auto_reply')" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+                            Draft & Type Human Reply (50-90ms delay)
+                        </button>
+                    </div>
+
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-base">Mode 2: Niche Reel Outreach Commenter</h3>
+                        <p class="text-xs text-slate-400">Visits target hashtag/topic, watches Reel for 5–8 seconds, reads caption, and types a value-add builder comment.</p>
+                        <input id="com-hashtag" type="text" value="aiagents" placeholder="Target Hashtag (e.g. aiagents, buildinpublic)" class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3.5 py-2 text-sm">
+                        <button onclick="runCommentEngine('outreach')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+                            Run Niche Outreach Commenter
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl">
+                    <h3 class="font-semibold text-sm mb-3">Recent Autonomous Replies & Outreach Log</h3>
+                    <div id="comments-log-list" class="space-y-2.5 text-xs"></div>
+                </div>
+            </div>
+
+            <!-- TAB 6: COGNITIVE BRAIN & STORY BANK -->
+            <div id="tab-brain" class="tab-pane hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold">Cognitive Brain & 82-Rule Humanizer Receipts</h2>
+                    <p class="text-sm text-slate-400">Every generated IG/FB caption and comment cites real builder metrics from your Story Bank and strips all 82 AI slop words.</p>
+                </div>
+                <div id="brain-receipts-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+
+            <!-- TAB 7: 01 LOGIN SETUP & GUARDRAILS -->
+            <div id="tab-login" class="tab-pane hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold">Phase 1: Persistent Login Engine (`01_login_setup.py`)</h2>
+                    <p class="text-sm text-slate-400">Log into Instagram and Facebook once in `chrome_profile`, or paste session cookies for < 1s instant sync + automatic `cookies.txt` export for `yt-dlp`.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-base">Option A: Interactive Persistent Chrome Login</h3>
+                        <p class="text-xs text-slate-400">Launches Chrome with `user_data_dir="G:\Meta agent\chrome_profile"` and `--disable-blink-features=AutomationControlled`. Opens Instagram in Tab 1 and Facebook in Tab 2.</p>
+                        <button onclick="launchInteractiveBrowser()" class="w-full bg-gradient-to-r from-pink-600 to-blue-600 hover:from-pink-500 hover:to-blue-500 text-white font-semibold py-3 rounded-xl text-sm">
+                            Launch Chrome Login Window (IG Tab 1 + FB Tab 2)
+                        </button>
+                    </div>
+
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                        <h3 class="font-semibold text-base">Option B: Instant Cookie Injection (< 1s Sync)</h3>
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1">Instagram `sessionid` Cookie</label>
+                            <input id="cookie-ig-sessionid" type="password" placeholder="Paste Instagram sessionid..." class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3.5 py-2 text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-slate-400 block mb-1">Facebook `c_user`</label>
+                                <input id="cookie-fb-cuser" type="text" placeholder="c_user..." class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3.5 py-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400 block mb-1">Facebook `xs`</label>
+                                <input id="cookie-fb-xs" type="password" placeholder="xs..." class="w-full bg-dark-900 border border-dark-600 rounded-xl px-3.5 py-2 text-sm">
+                            </div>
+                        </div>
+                        <button onclick="savePlatformCookies()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-xs">
+                            Save Cookies to `chrome_profile` & Export `cookies.txt` for `yt-dlp`
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 8: GITHUB SEO AGENT -->
+            <div id="tab-seo" class="tab-pane hidden space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold">GitHub SEO & Open-Source Launch Agent</h2>
+                        <p class="text-sm text-slate-400">Audits repository discoverability, MIT License, CI workflows, keyword density, and generates Hacker News / Reddit / X viral launch packs.</p>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <button onclick="installCommunityFiles()" class="text-xs bg-dark-700 hover:bg-dark-600 border border-dark-600 text-slate-200 font-semibold px-3.5 py-2.5 rounded-xl">
+                            Install MIT License & CI Files
+                        </button>
+                        <button onclick="applyOptimizedReadme()" class="text-xs bg-orange-600 hover:bg-orange-500 text-white font-semibold px-4 py-2.5 rounded-xl">
+                            Write 100/100 SEO README.md
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs text-slate-400 uppercase">GitHub SEO Health Score</span>
+                            <div class="flex items-baseline gap-3 mt-2">
+                                <span id="seo-score-val" class="text-4xl font-extrabold text-emerald-400">100</span>
+                                <span id="seo-grade-badge" class="text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full font-mono">Grade A+</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-xs text-slate-400 block mb-1">Recommended `gh` Topic Command:</span>
+                            <code id="seo-gh-cmd" class="block bg-dark-900 border border-dark-700 p-2.5 rounded-xl text-[11px] text-orange-300 font-mono break-all">gh repo edit ...</code>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-2.5">
+                        <h3 class="font-semibold text-sm">Repository Ranking Checklist</h3>
+                        <div id="seo-checklist-box" class="space-y-2 text-xs"></div>
+                    </div>
+                </div>
+
+                <div class="bg-dark-800 border border-dark-700 p-5 rounded-2xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-semibold text-base">Viral Multi-Channel Launch Pack Generator</h3>
+                        <select id="seo-launch-channel" onchange="loadLaunchPack()" class="bg-dark-900 border border-dark-600 rounded-xl px-3.5 py-2 text-xs">
+                            <option value="hacker_news">Hacker News (Show HN)</option>
+                            <option value="reddit_localllama">Reddit (r/LocalLLaMA)</option>
+                            <option value="reddit_selfhosted">Reddit (r/selfhosted)</option>
+                            <option value="twitter_thread">Twitter / X Launch Thread</option>
+                            <option value="release_notes">GitHub Release v1.0.0 Notes</option>
+                        </select>
+                    </div>
+                    <pre id="seo-launch-output" class="bg-dark-900 border border-dark-700 rounded-xl p-4 text-xs text-slate-200 font-mono whitespace-pre-wrap h-72 overflow-y-auto custom-scrollbar"></pre>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

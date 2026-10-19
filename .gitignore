@@ -1,0 +1,22 @@
+# Persistent Chrome Profile & Session Cookies (NEVER COMMIT)
+chrome_profile/
+storage/*.db
+storage/*.db-shm
+storage/*.db-wal
+.env
+
+# Media & Video Directories (Auto-generated at runtime)
+saved_videos/instagram/*.mp4
+saved_videos/facebook/*.mp4
+ready_to_post/*.mp4
+ready_to_post/*.png
+music_library/*.mp3
+logs/*.log
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/

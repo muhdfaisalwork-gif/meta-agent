@@ -1,0 +1,67 @@
+{
+  "project_name": "Meta Nexus Agent (Zero-API Facebook & Instagram Autonomous Studio)",
+  "version": "1.0.0",
+  "paths": {
+    "chrome_profile": "chrome_profile",
+    "saved_videos_ig": "saved_videos/instagram",
+    "saved_videos_fb": "saved_videos/facebook",
+    "music_library": "music_library",
+    "ready_to_post": "ready_to_post",
+    "logs": "logs",
+    "master_sheet": "saved_videos_log.xlsx",
+    "sqlite_db": "storage/meta_agent.db"
+  },
+  "accounts": {
+    "ig_username": "your_ig_username",
+    "fb_username": "your_fb_username",
+    "niche_hashtags": [
+      "aiagents",
+      "softwareengineering",
+      "saasfounder",
+      "buildinpublic",
+      "automation",
+      "fintech"
+    ],
+    "competitor_handles": [
+      "levelsio",
+      "alexhormozi",
+      "ycombinator"
+    ]
+  },
+  "llm": {
+    "provider": "ollama",
+    "ollama_base_url": "http://localhost:11434",
+    "ollama_model": "qwen2.5:latest",
+    "openrouter_model": "google/gemma-4-31b-it:free",
+    "temperature": 0.7,
+    "enforce_82_humanizer_rules": true
+  },
+  "audio_mixer": {
+    "original_video_volume": 0.20,
+    "music_overlay_volume": 0.85,
+    "static_image_duration_sec": 15,
+    "target_resolution": "1080x1920",
+    "target_fps": 30
+  },
+  "guardrails": {
+    "human_jitter_min_sec": 3.5,
+    "human_jitter_max_sec": 9.2,
+    "typing_delay_min_ms": 50,
+    "typing_delay_max_ms": 90,
+    "watch_reel_min_sec": 5.0,
+    "watch_reel_max_sec": 8.0,
+    "max_reels_per_day": 5,
+    "max_comments_per_session": 20,
+    "cooldown_minutes_between_posts": 45
+  },
+  "schedule": {
+    "auto_extract_saved_interval_hours": 12,
+    "Preferred_posting_times": [
+      "09:30",
+      "14:15",
+      "19:45"
+    ],
+    "auto_reply_inbox_enabled": true,
+    "outreach_commenting_enabled": false
+  }
+}
