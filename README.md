@@ -134,6 +134,17 @@ playwright install chromium
 python run.py
 ```
 
+### Option C: Install via GitHub Packages (`npm` Registry)
+Configure your `.npmrc` to route `@muhdfaisalwork-gif` to GitHub Packages:
+```ini
+@muhdfaisalwork-gif:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_PAT
+```
+Then install `@muhdfaisalwork-gif/meta-agent`:
+```bash
+npm install @muhdfaisalwork-gif/meta-agent
+```
+
 ---
 
 ## 🛠️ Running the 6 Blueprint Modules via CLI

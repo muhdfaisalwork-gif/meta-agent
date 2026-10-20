@@ -1,0 +1,47 @@
+{
+  "name": "@muhdfaisalwork-gif/meta-agent",
+  "version": "1.0.0",
+  "description": "Zero-API Facebook & Instagram Autonomous Studio SDK & MCP CLI powered by Playwright Persistent Context, yt-dlp, FFmpeg, 82-Rule Humanizer, and Local Ollama.",
+  "main": "index.js",
+  "bin": {
+    "meta-agent": "./bin/cli.js",
+    "meta-nexus-mcp": "./bin/mcp.js"
+  },
+  "scripts": {
+    "start": "node ./bin/cli.js",
+    "mcp": "node ./bin/mcp.js",
+    "test": "node -e \"const pkg = require('./index.js'); console.assert(pkg.PACKAGE_NAME === '@muhdfaisalwork-gif/meta-agent'); console.log('npm package test passed!');\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/muhdfaisalwork-gif/meta-agent.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "keywords": [
+    "meta-agent",
+    "instagram-automation",
+    "facebook-automation",
+    "yt-dlp",
+    "ffmpeg",
+    "playwright",
+    "ollama",
+    "mcp-server",
+    "claude-mcp",
+    "ai-agents"
+  ],
+  "author": "Muhd Faisal <muhdfaisalwork@gmail.com> (https://raulfinternational.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/muhdfaisalwork-gif/meta-agent/issues"
+  },
+  "homepage": "https://github.com/muhdfaisalwork-gif/meta-agent#readme",
+  "files": [
+    "index.js",
+    "bin/",
+    ".npmrc",
+    "README.md",
+    "LICENSE"
+  ]
+}

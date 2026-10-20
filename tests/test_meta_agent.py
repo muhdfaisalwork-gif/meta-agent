@@ -192,3 +192,26 @@ def test_seo_api_routes():
     assert r_pack.status_code == 200
     assert "hacker_news" in r_pack.json()["packs"]
 
+
+def test_github_packages_npm_config():
+    import json
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    pkg_json_path = os.path.join(root_dir, "package.json")
+    npmrc_path = os.path.join(root_dir, ".npmrc")
+    workflow_path = os.path.join(root_dir, ".github", "workflows", "npm-publish.yml")
+
+    assert os.path.exists(pkg_json_path)
+    assert os.path.exists(npmrc_path)
+    assert os.path.exists(workflow_path)
+
+    with open(pkg_json_path, "r", encoding="utf-8") as f:
+        pkg = json.load(f)
+    assert pkg["name"] == "@muhdfaisalwork-gif/meta-agent"
+    assert pkg["publishConfig"]["registry"] == "https://npm.pkg.github.com"
+    assert pkg["repository"]["url"] == "https://github.com/muhdfaisalwork-gif/meta-agent.git"
+
+    with open(npmrc_path, "r", encoding="utf-8") as f:
+        npmrc = f.read()
+    assert "@muhdfaisalwork-gif:registry=https://npm.pkg.github.com" in npmrc
+
+
